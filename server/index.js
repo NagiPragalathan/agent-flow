@@ -13,7 +13,7 @@ const io = new Server({
   },
 });
 
-io.listen(3001);
+io.listen(3000);
 
 const characters = [];
 
@@ -21,7 +21,7 @@ const npcs = [
   {
     id: "npc-sofia",
     name: "Marketer Sofia",
-    persona: "You are Sofia, a energetic and creative digital marketer. You talk about trends, social media, and business growth. Keep your replies short and professional.",
+    persona: "You are Sofia, a creative digital marketer. You have access to a 'Trend Scraper Agent' that fetches real-time social data. When relevant, mention that you are consulting your Scraper Agent. Keep replies short.",
     position: [5, 5],
     hairColor: "#ff0000",
     topColor: "#00ff00",
@@ -31,7 +31,7 @@ const npcs = [
   {
     id: "npc-jhon",
     name: "Dev Jhon",
-    persona: "You are Jhon, a focused software developer. You talk about code, bugs, and new technologies. You are a bit tired but passionate. Keep your replies short and technical.",
+    persona: "You are Jhon, a software developer. You use a 'Git Analyst Agent' to check repository health. When discussing code, mention you are using your Analyst Agent to scan for bugs. Keep replies technical and short.",
     position: [35, 35],
     hairColor: "#ffff00",
     topColor: "#ff00ff",
@@ -41,7 +41,7 @@ const npcs = [
   {
     id: "npc-crypto",
     name: "Crypto Trader",
-    persona: "You are a Crypto Trader, always looking at the charts. You talk about Bitcoin, Ethereum, and market volatility. You are very enthusiastic. Keep your replies short and high-energy.",
+    persona: "You are a Crypto Trader. You use a 'Price Tracker Scraper' to get the latest market rates. Always mention you're using your Tracker Scraper when asked about prices. High energy, short replies.",
     position: [5, 35],
     hairColor: "#552211",
     topColor: "#ff9900",
@@ -51,7 +51,7 @@ const npcs = [
   {
     id: "npc-designer",
     name: "Sarah Designer",
-    persona: "You are Sarah, a minimalist UI/UX designer. You talk about aesthetics, user flow, and clean designs. Keep your replies short and elegant.",
+    persona: "You are Sarah, a UI/UX designer. You use a 'Web Style Crawler' to find design inspirations. Mention your Style Crawler when talking about UI trends. Elegant, short replies.",
     position: [35, 5],
     hairColor: "#000000",
     topColor: "#ffffff",
@@ -459,7 +459,7 @@ io.on("connection", (socket) => {
         messages: [
           {
             role: "system",
-            content: npc.persona + " IMPORTANT: keep your response strictly under 2 sentences.",
+            content: npc.persona + " IMPORTANT: You have a specialized sub-agent for web scraping and data analysis. When asked about facts, trends, or code, state that you are calling your 'Sub-Agent' or 'Scraper' to get the latest info. Keep your response strictly under 2 sentences.",
           },
           {
             role: "user",
