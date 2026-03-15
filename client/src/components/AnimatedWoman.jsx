@@ -19,6 +19,7 @@ export function AnimatedWoman({
   topColor = "pink",
   bottomColor = "brown",
   id,
+  name,
   chatMessage,
   isNPC,
   ...props
@@ -197,7 +198,6 @@ export function AnimatedWoman({
   return (
     <group
       ref={group}
-      {...props}
       position={position}
       dispose={null}
       name={`character-${id}`}
@@ -212,30 +212,73 @@ export function AnimatedWoman({
               vector3ToGrid(player.position),
               vector3ToGrid(group.current.position)
             );
-            setTargetNPC({ id, hairColor, topColor, bottomColor });
+            setTargetNPC({ id, hairColor, topColor, bottomColor, name });
           }
         }
       }}
       onPointerOver={() => isNPC && setHovered(true)}
       onPointerOut={() => setHovered(false)}
     >
-      <Html position-y={2.2} center>
+      {/* Name Tag - Positioned precisely at head level */}
+      <Html position={[0, 2.7, 0]} center>
         <div
           style={{
-            background: "white",
-            padding: "8px 12px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-            whiteSpace: "nowrap",
-            opacity: chatMessage ? 1 : 0,
-            transition: "opacity 0.3s",
-            fontWeight: "bold",
+            background: "rgba(0, 0, 0, 0.9)",
+            backdropFilter: "blur(12px)",
+            padding: "8px 20px",
+            borderRadius: "40px",
+            color: "white",
             fontSize: "14px",
-            color: "#333",
-            border: "2px solid #ddd",
+            fontWeight: "900",
+            whiteSpace: "nowrap",
+            border: `3px solid ${topColor}`,
+            pointerEvents: "none",
+            userSelect: "none",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.6)",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            textAlign: "center",
+            opacity: isInteracting ? 0 : 1,
+            transition: "opacity 0.3s",
+          }}
+        >
+          {name || "AGENT"}
+        </div>
+      </Html>
+
+      {/* Chat Bubble - Positioned above the name tag */}
+      <Html position={[0, 3.4, 0]} center>
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.95)",
+            padding: "12px 20px",
+            borderRadius: "20px 20px 20px 4px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+            whiteSpace: "nowrap",
+            opacity: chatMessage && !isInteracting ? 1 : 0,
+            transform: `scale(${chatMessage && !isInteracting ? 1 : 0.4}) translateY(${chatMessage && !isInteracting ? 0 : 20}px)`,
+            transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+            fontWeight: "bold",
+            fontSize: "16px",
+            color: "#111",
+            border: "2px solid #fff",
+            pointerEvents: "none",
+            maxWidth: "300px",
+            overflow: "hidden",
+            textOverflow: "ellipsis"
           }}
         >
           {chatMessage}
+          <div style={{
+            position: 'absolute',
+            bottom: '-12px',
+            left: '10%',
+            width: '0',
+            height: '0',
+            borderLeft: '12px solid transparent',
+            borderRight: '12px solid transparent',
+            borderTop: '12px solid rgba(255, 255, 255, 0.95)',
+          }} />
         </div>
       </Html>
       <group name="Root_Scene">

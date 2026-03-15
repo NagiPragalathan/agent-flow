@@ -58,6 +58,7 @@ export const Experience = () => {
         <AnimatedWoman
           key={character.id}
           id={character.id}
+          name={character.name}
           path={character.path}
           position={gridToVector3(character.position)}
           hairColor={character.hairColor}

@@ -1,5 +1,12 @@
+import "dotenv/config";
 import pathfinding from "pathfinding";
 import { Server } from "socket.io";
+import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
 const io = new Server({
   cors: {
     origin: "http://localhost:5173",
@@ -12,7 +19,9 @@ const characters = [];
 
 const npcs = [
   {
-    id: "npc-1",
+    id: "npc-sofia",
+    name: "Marketer Sofia",
+    persona: "You are Sofia, a energetic and creative digital marketer. You talk about trends, social media, and business growth. Keep your replies short and professional.",
     position: [5, 5],
     hairColor: "#ff0000",
     topColor: "#00ff00",
@@ -20,7 +29,9 @@ const npcs = [
     isNPC: true,
   },
   {
-    id: "npc-2",
+    id: "npc-jhon",
+    name: "Dev Jhon",
+    persona: "You are Jhon, a focused software developer. You talk about code, bugs, and new technologies. You are a bit tired but passionate. Keep your replies short and technical.",
     position: [35, 35],
     hairColor: "#ffff00",
     topColor: "#ff00ff",
@@ -28,7 +39,9 @@ const npcs = [
     isNPC: true,
   },
   {
-    id: "npc-3",
+    id: "npc-crypto",
+    name: "Crypto Trader",
+    persona: "You are a Crypto Trader, always looking at the charts. You talk about Bitcoin, Ethereum, and market volatility. You are very enthusiastic. Keep your replies short and high-energy.",
     position: [5, 35],
     hairColor: "#552211",
     topColor: "#ff9900",
@@ -36,43 +49,13 @@ const npcs = [
     isNPC: true,
   },
   {
-    id: "npc-4",
+    id: "npc-designer",
+    name: "Sarah Designer",
+    persona: "You are Sarah, a minimalist UI/UX designer. You talk about aesthetics, user flow, and clean designs. Keep your replies short and elegant.",
     position: [35, 5],
     hairColor: "#000000",
     topColor: "#ffffff",
     bottomColor: "#555555",
-    isNPC: true,
-  },
-  {
-    id: "npc-5",
-    position: [20, 10],
-    hairColor: "#663399",
-    topColor: "#ffa500",
-    bottomColor: "#228b22",
-    isNPC: true,
-  },
-  {
-    id: "npc-6",
-    position: [10, 20],
-    hairColor: "#ffc0cb",
-    topColor: "#4b0082",
-    bottomColor: "#f0e68c",
-    isNPC: true,
-  },
-  {
-    id: "npc-7",
-    position: [30, 20],
-    hairColor: "#a52a2a",
-    topColor: "#00ced1",
-    bottomColor: "#ff4500",
-    isNPC: true,
-  },
-  {
-    id: "npc-8",
-    position: [20, 30],
-    hairColor: "#708090",
-    topColor: "#ff1493",
-    bottomColor: "#7cfc00",
     isNPC: true,
   },
 ];
@@ -422,10 +405,12 @@ const generateRandomHexColor = () => {
 };
 
 io.on("connection", (socket) => {
-  console.log("user connected");
+  const playerNames = ["Agent Shadow", "Agent Hunter", "Agent Hunter", "Agent Blaze", "Agent Maverick", "Agent Spectra", "Agent Viper", "Agent Raven", "Agent Echo"];
+  const playerName = `${playerNames[Math.floor(Math.random() * playerNames.length)]} ${socket.id.substring(0, 3)}`;
 
   characters.push({
     id: socket.id,
+    name: playerName,
     position: generateRandomPosition(),
     hairColor: generateRandomHexColor(),
     topColor: generateRandomHexColor(),
@@ -459,9 +444,38 @@ io.on("connection", (socket) => {
     if (npc) {
       npc.isInteracting = true;
       npc.path = []; // Clear path immediately
-      npc.chatMessage = "Hello! I'm listening.";
+      npc.chatMessage = `Hello! I'm ${npc.name}. How can I help you?`;
       io.emit("playerMove", npc); // Broadcast path clearing
       io.emit("characters", characters);
+    }
+  });
+
+  socket.on("chat", async (npcId, message) => {
+    const npc = characters.find((c) => c.id === npcId);
+    if (!npc) return;
+
+    try {
+      const completion = await groq.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content: npc.persona + " IMPORTANT: keep your response strictly under 2 sentences.",
+          },
+          {
+            role: "user",
+            content: message,
+          },
+        ],
+        model: "llama-3.1-8b-instant",
+      });
+
+      const response = completion.choices[0].message.content;
+      npc.chatMessage = response;
+      io.emit("playerMove", npc); // Broadcast new message
+      socket.emit("chatResponse", response);
+    } catch (error) {
+      console.error("Groq Error:", error);
+      socket.emit("chatResponse", "Sorry, I'm having trouble thinking right now.");
     }
   });
 
@@ -530,10 +544,10 @@ const moveNPCs = () => {
 };
 
 const interactNPCs = () => {
-  characters.forEach((char1) => {
+  characters.forEach(async (char1) => {
     if (!char1.isNPC) return;
     if (char1.isInteracting) return;
-    if (char1.talkDuration > 0) return; // Keep talking until duration ends
+    if (char1.talkDuration > 0) return;
 
     let minDistance = 5;
     let closestChar = null;
@@ -558,23 +572,31 @@ const interactNPCs = () => {
         char1.talkDuration = 5; 
         char1.path = []; 
         io.emit("playerMove", char1);
-      } else if (!char1.chatMessage) {
-        const greetings = ["Hey!", "Hello there.", "Hi!", "Good afternoon.", "Yo!"];
-        const topics = [
-          "I'm thinking of visiting the fountain.",
-          "The flowers are blooming beautifully.",
-          "Have you seen the new plants?",
-          "I love how peaceful it is here.",
-          "I might sit on that bench for a bit.",
-          "What a lovely day for a walk.",
-        ];
-        char1.chatMessage = greetings[Math.floor(Math.random() * greetings.length)] + " " + topics[Math.floor(Math.random() * topics.length)];
-        char1.talkDuration = 10; // NPC stay for 10s
-        char1.path = []; 
-        io.emit("playerMove", char1);
+      } else if (!char1.chatMessage && closestChar.isNPC) {
+        // AI TO AI Interaction
+        try {
+          const completion = await groq.chat.completions.create({
+            messages: [
+              {
+                role: "system",
+                content: `You are simulating a conversation between two agents in a park. 
+                Agent 1: ${char1.name} (Persona: ${char1.persona})
+                Agent 2: ${closestChar.name} (Persona: ${closestChar.persona})
+                Provide a short 1-sentence greeting or comment from Agent 1 to Agent 2.`,
+              },
+            ],
+            model: "llama-3.1-8b-instant",
+          });
+          const response = completion.choices[0].message.content;
+          char1.chatMessage = response;
+          char1.talkDuration = 15; // Hold for 15s for AI interaction
+          char1.path = [];
+          io.emit("playerMove", char1);
+        } catch (error) {
+           console.error("AI to AI Error:", error);
+        }
       }
     } else {
-        // Only clear if duration is 0
         if (char1.talkDuration <= 0) {
             char1.chatMessage = "";
         }
