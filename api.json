@@ -1,0 +1,162 @@
+{
+  "info": {
+    "name": "ZyFlow Live Demo",
+    "_postman_id": "f0b2f2a4-8f57-4b8e-aaf2-zyflow-live-demo",
+    "description": "ZyFlow demo: mock agents + real on-chain payment + x402 verification checks",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "apiBase",
+      "value": "http://localhost:4000/api"
+    },
+    {
+      "key": "agentAddress",
+      "value": "0x1111111111111111111111111111111111111111"
+    },
+    {
+      "key": "txHash",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Demo Agents",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{apiBase}}/demo/agents"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Agents array exists', function () {",
+              "  pm.expect(pm.response.json().agents).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Real On-chain Agent Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agentAddress\": \"{{agentAddress}}\",\n  \"serviceName\": \"market_analysis\",\n  \"amountEth\": \"0.0001\"\n}"
+        },
+        "url": "{{apiBase}}/demo/agent-payment"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test('chainTxHash exists', function () {",
+              "  pm.expect(pm.response.json().payment.chainTxHash).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.environment.set('txHash', pm.response.json().payment.chainTxHash);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. X402 Verify",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"txHash\": \"{{txHash}}\",\n  \"expectedAmountWei\": \"100000000000000\"\n}"
+        },
+        "url": "{{apiBase}}/demo/x402-verify"
+      }
+    },
+    {
+      "name": "5. Execute Without X402 Header (should fail 402)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agentId\": 9001,\n  \"task\": \"market_analysis\",\n  \"params\": { \"symbol\": \"BTC\" },\n  \"requestingAgent\": \"0x1111111111111111111111111111111111111111\"\n}"
+        },
+        "url": "{{apiBase}}/agent/execute"
+      }
+    },
+    {
+      "name": "6. Execute With X402 Header",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x402-payment-tx",
+            "value": "{{txHash}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"agentId\": 9001,\n  \"task\": \"market_analysis\",\n  \"params\": { \"symbol\": \"BTC\" },\n  \"requestingAgent\": \"0x1111111111111111111111111111111111111111\"\n}"
+        },
+        "url": "{{apiBase}}/agent/execute"
+      }
+    }
+  ]
+}
