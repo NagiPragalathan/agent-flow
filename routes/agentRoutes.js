@@ -4,7 +4,8 @@ const { verifyX402Payment } = require("../middleware/x402Middleware");
 const { listAgents, getAgent, filterAgentsByCapability } = require("../services/registryService");
 const { resolveAgentEndpoint } = require("../services/agentInteractionEngine");
 const { verifyGoatX402Payment } = require("../services/x402Service");
-const { payAgent } = require("../services/paymentContractService");
+const { payAgent, verifyOnchainPayment } = require("../services/paymentContractService");
+const { requireUsdcX402Payment } = require("../middleware/x402UsdcMiddleware");
 
 const router = express.Router();
 const paymentHistory = [];
@@ -175,14 +176,6 @@ async function demoAgentPayment(req, res) {
       return res.status(400).json({ error: "agentAddress is required" });
     }
 
-    const registryAddress = String(process.env.ERC8004_REGISTRY_ADDRESS || "").toLowerCase();
-    if (String(agentAddress).toLowerCase() === registryAddress) {
-      return res.status(400).json({
-        error: "Invalid agentAddress for payment",
-        message: "Do not use registry contract address as receiver. Use agent owner wallet (EOA) or payable contract address."
-      });
-    }
-
     const payment = await payAgent({
       agentAddress,
       serviceName: serviceName || "market_analysis",
@@ -214,10 +207,34 @@ async function demoVerifyX402(req, res) {
       return res.status(400).json({ error: "txHash is required" });
     }
 
-    const result = await verifyGoatX402Payment(txHash, expectedAmountWei || "0");
+    const expectedWei = String(expectedAmountWei || "0");
+    const x402Result = await verifyGoatX402Payment(txHash, expectedWei);
+
+    const endpointUnavailable =
+      !x402Result.valid &&
+      /status 404/i.test(String(x402Result.reason || "")) &&
+      /cannot post/i.test(String(x402Result.response || ""));
+
+    let result = x402Result;
+    if (endpointUnavailable) {
+      const onchain = await verifyOnchainPayment(txHash, expectedWei);
+      result = onchain.valid
+        ? {
+            ...onchain,
+            verificationMode: "onchain_fallback",
+            x402Available: false,
+            reason: "x402 txHash verification endpoint unavailable; on-chain verification passed"
+          }
+        : {
+            ...x402Result,
+            verificationMode: "onchain_fallback_failed",
+            onchain
+          };
+    }
+
     upsertTransaction({
       txHash,
-      amountWei: result.amountWei || String(expectedAmountWei || "0"),
+      amountWei: result.amountWei || expectedWei,
       status: result.valid ? "x402_verified" : "x402_failed",
       merchantId: result.merchantId || process.env.GOATX402_MERCHANT_ID || "",
       agentId: null,
@@ -234,6 +251,52 @@ async function demoVerifyX402(req, res) {
   }
 }
 
+async function aiPlanHandler(req, res) {
+  try {
+    const goal = String(req.query.goal || "Build and launch a resilient AI workflow");
+    const constraints = String(req.query.constraints || "budget, latency, reliability");
+    const plan = [
+      {
+        step: 1,
+        name: "Discover Inputs",
+        details: `Gather context and requirements for: ${goal}`
+      },
+      {
+        step: 2,
+        name: "Generate Strategy",
+        details: "Select model routing, tool usage, and error budgets"
+      },
+      {
+        step: 3,
+        name: "Execute Workflow",
+        details: `Run execution pipeline while enforcing constraints: ${constraints}`
+      },
+      {
+        step: 4,
+        name: "Validate Output",
+        details: "Perform quality checks, guardrails, and rollback criteria"
+      }
+    ];
+
+    return res.json({
+      ok: true,
+      tool: "ai-plan",
+      plan,
+      paymentVerified: {
+        protocol: "x402",
+        txHash: req.paymentInfo.txHash,
+        chain: req.paymentInfo.chain,
+        chainId: req.paymentInfo.chainId,
+        token: req.paymentInfo.token,
+        amount: req.paymentInfo.amountFormatted,
+        receiver: req.paymentInfo.receiver
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+
 router.get("/agents", listAgentsHandler);
 router.get("/agents/:id", getAgentHandler);
 router.get("/agents/capability/:capability", filterAgentsByCapabilityHandler);
@@ -245,5 +308,6 @@ router.get("/transactions", transactionHistory);
 router.get("/demo/agents", listDemoAgents);
 router.post("/demo/agent-payment", demoAgentPayment);
 router.post("/demo/x402-verify", demoVerifyX402);
+router.get("/ai-plan", requireUsdcX402Payment(), aiPlanHandler);
 
 module.exports = router;

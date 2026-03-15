@@ -55,6 +55,59 @@ async function payAgent({ agentAddress, serviceName, amountEth }) {
   };
 }
 
+async function verifyOnchainPayment(txHash, expectedAmountWei) {
+  if (!txHash) {
+    return { valid: false, reason: "Missing transaction hash" };
+  }
+
+  const provider = getProvider();
+  const receipt = await provider.getTransactionReceipt(txHash);
+  if (!receipt) {
+    return { valid: false, reason: "Transaction not found" };
+  }
+
+  if (receipt.status !== 1) {
+    return { valid: false, reason: "Transaction failed on-chain" };
+  }
+
+  const tx = await provider.getTransaction(txHash);
+  if (!tx) {
+    return { valid: false, reason: "Transaction details unavailable" };
+  }
+
+  const paidTo = tx.to || "";
+  const expectedTo = String(process.env.AGENT_SERVICE_PAYMENT_ADDRESS || "").toLowerCase();
+  if (expectedTo && String(paidTo).toLowerCase() !== expectedTo) {
+    return {
+      valid: false,
+      reason: "Transaction target mismatch",
+      paidTo,
+      expectedTo
+    };
+  }
+
+  const paidAmount = tx.value || 0n;
+  const expectedAmount = BigInt(expectedAmountWei || "0");
+  if (paidAmount < expectedAmount) {
+    return {
+      valid: false,
+      reason: "Amount too low",
+      amountWei: paidAmount.toString(),
+      expectedAmountWei: expectedAmount.toString()
+    };
+  }
+
+  return {
+    valid: true,
+    txHash,
+    blockNumber: receipt.blockNumber,
+    amountWei: paidAmount.toString(),
+    paidTo,
+    status: "confirmed"
+  };
+}
+
 module.exports = {
-  payAgent
+  payAgent,
+  verifyOnchainPayment
 };
