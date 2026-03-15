@@ -13,7 +13,7 @@ const characters = [];
 const npcs = [
   {
     id: "npc-1",
-    position: [2, 2],
+    position: [5, 5],
     hairColor: "#ff0000",
     topColor: "#00ff00",
     bottomColor: "#0000ff",
@@ -21,7 +21,7 @@ const npcs = [
   },
   {
     id: "npc-2",
-    position: [8, 8],
+    position: [35, 35],
     hairColor: "#ffff00",
     topColor: "#ff00ff",
     bottomColor: "#00ffff",
@@ -29,7 +29,7 @@ const npcs = [
   },
   {
     id: "npc-3",
-    position: [5, 2],
+    position: [5, 35],
     hairColor: "#552211",
     topColor: "#ff9900",
     bottomColor: "#333333",
@@ -37,10 +37,42 @@ const npcs = [
   },
   {
     id: "npc-4",
-    position: [1, 9],
+    position: [35, 5],
     hairColor: "#000000",
     topColor: "#ffffff",
     bottomColor: "#555555",
+    isNPC: true,
+  },
+  {
+    id: "npc-5",
+    position: [20, 10],
+    hairColor: "#663399",
+    topColor: "#ffa500",
+    bottomColor: "#228b22",
+    isNPC: true,
+  },
+  {
+    id: "npc-6",
+    position: [10, 20],
+    hairColor: "#ffc0cb",
+    topColor: "#4b0082",
+    bottomColor: "#f0e68c",
+    isNPC: true,
+  },
+  {
+    id: "npc-7",
+    position: [30, 20],
+    hairColor: "#a52a2a",
+    topColor: "#00ced1",
+    bottomColor: "#ff4500",
+    isNPC: true,
+  },
+  {
+    id: "npc-8",
+    position: [20, 30],
+    hairColor: "#708090",
+    topColor: "#ff1493",
+    bottomColor: "#7cfc00",
     isNPC: true,
   },
 ];
@@ -310,141 +342,29 @@ const items = {
 };
 
 const map = {
-  size: [10, 10],
+  size: [20, 20],
   gridDivision: 2,
   items: [
-    {
-      ...items.showerRound,
-      gridPosition: [0, 0],
-    },
-    {
-      ...items.toiletSquare,
-      gridPosition: [0, 3],
-      rotation: 1,
-    },
-    {
-      ...items.washer,
-      gridPosition: [5, 0],
-    },
-    {
-      ...items.bathroomSink,
-      gridPosition: [7, 0],
-    },
-    {
-      ...items.trashcan,
-      gridPosition: [0, 5],
-      rotation: 1,
-    },
-    {
-      ...items.bathroomCabinetDrawer,
-      gridPosition: [3, 0],
-    },
-    {
-      ...items.bathtub,
-      gridPosition: [4, 4],
-    },
-    {
-      ...items.bathtub,
-      gridPosition: [0, 8],
-      rotation: 3,
-    },
-    {
-      ...items.bathroomCabinet,
-      gridPosition: [3, 0],
-    },
-    {
-      ...items.bathroomMirror,
-      gridPosition: [0, 8],
-      rotation: 1,
-    },
-    {
-      ...items.bathroomMirror,
-      gridPosition: [, 10],
-      rotation: 1,
-    },
-    {
-      ...items.tableCoffee,
-      gridPosition: [10, 8],
-    },
-    {
-      ...items.rugRectangle,
-      gridPosition: [8, 7],
-    },
-    {
-      ...items.loungeSofaCorner,
-      gridPosition: [6, 10],
-    },
-    {
-      ...items.bear,
-      gridPosition: [0, 3],
-      rotation: 1,
-    },
-    {
-      ...items.plant,
-      gridPosition: [11, 13],
-    },
-    {
-      ...items.cabinetBedDrawerTable,
-      gridPosition: [13, 19],
-    },
-    {
-      ...items.cabinetBedDrawer,
-      gridPosition: [19, 19],
-    },
-    {
-      ...items.bedDouble,
-      gridPosition: [14, 15],
-    },
-    {
-      ...items.bookcaseClosedWide,
-      gridPosition: [12, 0],
-      rotation: 2,
-    },
-    {
-      ...items.speaker,
-      gridPosition: [11, 0],
-    },
-    {
-      ...items.speakerSmall,
-      gridPosition: [15, 0],
-    },
-    {
-      ...items.loungeChair,
-      gridPosition: [10, 4],
-    },
-    {
-      ...items.loungeSofaOttoman,
-      gridPosition: [14, 4],
-    },
-    {
-      ...items.loungeDesignSofa,
-      gridPosition: [18, 0],
-      rotation: 1,
-    },
-    {
-      ...items.kitchenCabinetCornerRound,
-      gridPosition: [2, 18],
-      rotation: 2,
-    },
-    {
-      ...items.kitchenCabinetCornerInner,
-      gridPosition: [0, 18],
-      rotation: 2,
-    },
-    {
-      ...items.kitchenStove,
-      gridPosition: [0, 16],
-      rotation: 1,
-    },
-    {
-      ...items.dryer,
-      gridPosition: [0, 14],
-      rotation: 1,
-    },
-    {
-      ...items.lampRoundFloor,
-      gridPosition: [0, 12],
-    },
+    { ...items.plant, gridPosition: [2, 2] },
+    { ...items.plant, gridPosition: [37, 2] },
+    { ...items.plant, gridPosition: [2, 37] },
+    { ...items.plant, gridPosition: [37, 37] },
+    { ...items.plant, gridPosition: [20, 20] },
+    { ...items.plantSmall, gridPosition: [10, 10] },
+    { ...items.plantSmall, gridPosition: [30, 10] },
+    { ...items.plantSmall, gridPosition: [10, 30] },
+    { ...items.plantSmall, gridPosition: [30, 30] },
+    { ...items.bench, gridPosition: [20, 10], rotation: 0 },
+    { ...items.bench, gridPosition: [20, 30], rotation: 2 },
+    { ...items.bench, gridPosition: [10, 20], rotation: 1 },
+    { ...items.bench, gridPosition: [30, 20], rotation: 3 },
+    { ...items.lampRoundFloor, gridPosition: [15, 15] },
+    { ...items.lampRoundFloor, gridPosition: [25, 15] },
+    { ...items.lampRoundFloor, gridPosition: [15, 25] },
+    { ...items.lampRoundFloor, gridPosition: [25, 25] },
+    { ...items.trashcan, gridPosition: [39, 39] },
+    { ...items.trashcan, gridPosition: [0, 0] },
+    { ...items.bear, gridPosition: [20, 4], rotation: 2 },
   ],
 };
 
@@ -529,9 +449,29 @@ io.on("connection", (socket) => {
     if (!path) {
       return;
     }
-    character.position = from;
+    character.position = from; // Stay at 'from' for proximity while moving
     character.path = path;
     io.emit("playerMove", character);
+  });
+
+  socket.on("startInteraction", (npcId) => {
+    const npc = characters.find((c) => c.id === npcId);
+    if (npc) {
+      npc.isInteracting = true;
+      npc.path = []; // Clear path immediately
+      npc.chatMessage = "Hello! I'm listening.";
+      io.emit("playerMove", npc); // Broadcast path clearing
+      io.emit("characters", characters);
+    }
+  });
+
+  socket.on("endInteraction", () => {
+    characters.forEach((c) => {
+      if (c.isInteracting) {
+        c.isInteracting = false;
+      }
+    });
+    io.emit("characters", characters);
   });
 
   socket.on("disconnect", () => {
@@ -546,17 +486,44 @@ io.on("connection", (socket) => {
 });
 
 const moveNPCs = () => {
-  npcs.forEach((npc) => {
-    if (Math.random() > 0.8) {
-      // 20% chance to move each interval
-      const newPosition = generateRandomPosition();
-      if (newPosition) {
-        const path = findPath(npc.position, newPosition);
-        if (path) {
-          npc.position = newPosition;
-          npc.path = path;
-          io.emit("playerMove", npc);
+  characters.forEach((npc) => {
+    if (!npc.isNPC) return;
+    if (npc.isInteracting) return; 
+    
+    if (npc.talkDuration > 0) {
+      npc.talkDuration--;
+      npc.idleCount = 0; // Reset while talking
+      return;
+    }
+
+    // Move logic: 40% chance every 5s, or guaranteed if idle for 10s (2 ticks)
+    npc.idleCount = (npc.idleCount || 0) + 1;
+    if (npc.idleCount < 2 && Math.random() > 0.4) return; 
+
+    npc.idleCount = 0; // Reset count
+    let newPosition = null;
+    for(let i=0; i<10; i++) { // More attempts to find a far destination
+        const potential = generateRandomPosition();
+        if (potential) {
+            const dx = potential[0] - npc.position[0];
+            const dy = potential[1] - npc.position[1];
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist > 15) { // Force them to walk across the map
+                newPosition = potential;
+                break;
+            }
+            newPosition = potential;
         }
+    }
+
+    if (newPosition) {
+      const path = findPath(npc.position, newPosition);
+      if (path) {
+        npc.position = newPosition;
+        npc.path = path;
+        npc.chatMessage = ""; 
+        npc.talkDuration = 0;
+        io.emit("playerMove", npc);
       }
     }
   });
@@ -565,50 +532,56 @@ const moveNPCs = () => {
 const interactNPCs = () => {
   characters.forEach((char1) => {
     if (!char1.isNPC) return;
+    if (char1.isInteracting) return;
+    if (char1.talkDuration > 0) return; // Keep talking until duration ends
 
+    let minDistance = 5;
     let closestChar = null;
-    let minDistance = Infinity;
 
     characters.forEach((char2) => {
       if (char1.id === char2.id) return;
-      const dist = Math.sqrt(
-        Math.pow(char1.position[0] - char2.position[0], 2) +
-          Math.pow(char1.position[1] - char2.position[1], 2)
-      );
+      const dx = char1.position[0] - char2.position[0];
+      const dy = char1.position[1] - char2.position[1];
+      const dist = Math.sqrt(dx*dx + dy*dy);
       if (dist < minDistance) {
         minDistance = dist;
         closestChar = char2;
       }
     });
 
-    if (minDistance < 3) {
-      if (closestChar && !closestChar.isNPC) {
-        const messages = [
-          "Hi player! How are you?",
-          "Nice outfit!",
-          "Welcome to our world!",
-          "Are you new here?",
+    if (closestChar && minDistance < 3) {
+      if (char1.chatMessage) return; 
+      if (Math.random() < 0.9) return; 
+
+      if (!closestChar.isNPC) {
+        char1.chatMessage = ["Hi!", "Hello!", "Nice day.", "Hey player."][Math.floor(Math.random() * 4)];
+        char1.talkDuration = 5; 
+        char1.path = []; 
+        io.emit("playerMove", char1);
+      } else if (!char1.chatMessage) {
+        const greetings = ["Hey!", "Hello there.", "Hi!", "Good afternoon.", "Yo!"];
+        const topics = [
+          "I'm thinking of visiting the fountain.",
+          "The flowers are blooming beautifully.",
+          "Have you seen the new plants?",
+          "I love how peaceful it is here.",
+          "I might sit on that bench for a bit.",
+          "What a lovely day for a walk.",
         ];
-        if (!char1.chatMessage || !messages.includes(char1.chatMessage)) {
-           char1.chatMessage = messages[Math.floor(Math.random() * messages.length)];
-        }
-      } else if (closestChar && closestChar.isNPC) {
-        const npcMessages = [
-          "Lovely weather today.",
-          "I'm just walking around...",
-          "Did you see that player?",
-          "Beep boop, I am an NPC.",
-        ];
-        if (!char1.chatMessage || !npcMessages.includes(char1.chatMessage)) {
-          char1.chatMessage = npcMessages[Math.floor(Math.random() * npcMessages.length)];
-        }
+        char1.chatMessage = greetings[Math.floor(Math.random() * greetings.length)] + " " + topics[Math.floor(Math.random() * topics.length)];
+        char1.talkDuration = 10; // NPC stay for 10s
+        char1.path = []; 
+        io.emit("playerMove", char1);
       }
     } else {
-      char1.chatMessage = "";
+        // Only clear if duration is 0
+        if (char1.talkDuration <= 0) {
+            char1.chatMessage = "";
+        }
     }
   });
   io.emit("characters", characters);
 };
 
 setInterval(moveNPCs, 5000);
-setInterval(interactNPCs, 3000);
+setInterval(interactNPCs, 1000); // More frequent check for responsive stopping

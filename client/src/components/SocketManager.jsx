@@ -6,11 +6,23 @@ export const socket = io("http://localhost:3001");
 export const charactersAtom = atom([]);
 export const mapAtom = atom(null);
 export const userAtom = atom(null);
+export const interactingNPCAtom = atom(null);
+export const targetNPCAtom = atom(null);
 
 export const SocketManager = () => {
   const [_characters, setCharacters] = useAtom(charactersAtom);
   const [_map, setMap] = useAtom(mapAtom);
   const [_user, setUser] = useAtom(userAtom);
+  const [interactingNPC] = useAtom(interactingNPCAtom);
+
+  useEffect(() => {
+    if (interactingNPC) {
+      socket.emit("startInteraction", interactingNPC.id);
+    } else {
+      socket.emit("endInteraction");
+    }
+  }, [interactingNPC]);
+
   useEffect(() => {
     function onConnect() {
       console.log("connected");
@@ -22,11 +34,23 @@ export const SocketManager = () => {
     function onHello(value) {
       setMap(value.map);
       setUser(value.id);
-      setCharacters(value);
+      setCharacters(value.characters);
     }
 
     function onCharacters(value) {
-      setCharacters(value);
+      setCharacters((prev) => {
+        return value.map((newChar) => {
+          const prevChar = prev.find((c) => c.id === newChar.id);
+          // If it's the current user, don't overwrite their path with server's stale/static path
+          if (newChar.id === socket.id) {
+            return {
+              ...newChar,
+              path: prevChar?.path || newChar.path,
+            };
+          }
+          return newChar;
+        });
+      });
     }
 
     function onPlayerMove(value) {
